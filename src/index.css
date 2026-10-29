@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-heading: 'Montserrat', sans-serif;
+    --font-body: 'Plus Jakarta Sans', sans-serif;
+    --bg: #08090b;
+    --card: #121418;
+    --card2: #1a1d23;
+    --field: #0d0f12;
+    --line: #2f343e;
+    --line2: #646b78;
+    --or: #fe6601;
+    --or2: #ff8c2e;
+    --or-fill: #e05a00;
+    --or-chip: #c75000;
+    --txt: #f4f5f7;
+    --mut: #9aa1ad;
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--txt);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, .font-heading {
+    font-family: var(--font-heading);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.02);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 4s ease-in-out infinite;
+}
