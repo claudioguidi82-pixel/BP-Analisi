@@ -27,8 +27,6 @@ interface ProposalStepProps {
   analysis: TechnicalAnalysisResult;
   onEdit: () => void;
   onNew: () => void;
-  onSaveToArchive: () => void;
-  isSaved: boolean;
 }
 
 export const ProposalStep: React.FC<ProposalStepProps> = ({
@@ -36,8 +34,6 @@ export const ProposalStep: React.FC<ProposalStepProps> = ({
   analysis,
   onEdit,
   onNew,
-  onSaveToArchive,
-  isSaved,
 }) => {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);

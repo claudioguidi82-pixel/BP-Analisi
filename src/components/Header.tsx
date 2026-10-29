@@ -1,15 +1,13 @@
 import React from 'react';
 import { LOGO_SYSTEM_BYTE, LOGO_WINDTRE_BP } from '../data/assets';
-import { FolderClock, PlusCircle } from 'lucide-react';
+import { PlusCircle } from 'lucide-react';
 import { PWAInstallButton } from './PWAInstallButton';
 
 interface HeaderProps {
-  onOpenHistory: () => void;
   onNewAnalysis: () => void;
-  savedCount: number;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onOpenHistory, onNewAnalysis, savedCount }) => {
+export const Header: React.FC<HeaderProps> = ({ onNewAnalysis }) => {
   return (
     <header className="relative bg-black overflow-hidden select-none z-50">
       {/* Background orange geometric corner */}
@@ -42,18 +40,6 @@ export const Header: React.FC<HeaderProps> = ({ onOpenHistory, onNewAnalysis, sa
         {/* Action buttons (compact for history/new) */}
         <div className="flex items-center gap-2 pr-4 sm:pr-8">
           <PWAInstallButton />
-          <button
-            onClick={onOpenHistory}
-            className="p-2 rounded-lg bg-neutral-900/50 text-neutral-300 border border-neutral-800 hover:text-white transition-colors relative"
-            title="Archivio"
-          >
-            <FolderClock className="w-4 h-4" />
-            {savedCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#fe6601] text-white text-[10px] flex items-center justify-center font-bold">
-                {savedCount}
-              </span>
-            )}
-          </button>
           <button
             onClick={onNewAnalysis}
             className="p-2 rounded-lg bg-neutral-900/50 text-neutral-300 border border-neutral-800 hover:text-white transition-colors"

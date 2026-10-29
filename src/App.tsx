@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { AnalysisData, SavedAnalysis } from './types';
+import { AnalysisData } from './types';
 import { INITIAL_DATA, analyzeProposal } from './utils/engine';
 import { Header } from './components/Header';
 import { StepProgress } from './components/StepProgress';
@@ -10,23 +10,17 @@ import { ExternalAccessStep } from './components/ExternalAccessStep';
 import { VoipStep } from './components/VoipStep';
 import { ProposalStep } from './components/ProposalStep';
 import { BottomBar } from './components/BottomBar';
-import { HistoryModal } from './components/HistoryModal';
-import { downloadPdf } from './utils/pdfGenerator';
 
 const DRAFT_KEY = 'sb_analisi_active_draft_v2';
-const HISTORY_KEY = 'sb_analisi_history_v2';
 
 import { Hero } from './components/Hero';
 
 export default function App() {
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [data, setData] = useState<AnalysisData>(INITIAL_DATA);
-  const [savedList, setSavedList] = useState<SavedAnalysis[]>([]);
-  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [errorField, setErrorField] = useState<string | null>(null);
-  const [isCurrentSaved, setIsCurrentSaved] = useState(false);
 
-  // Load active draft and saved history on mount
+  // Load active draft on mount
   useEffect(() => {
     try {
       const draft = localStorage.getItem(DRAFT_KEY);
@@ -37,14 +31,6 @@ export default function App() {
           if (typeof parsed.step === 'number') {
             setCurrentStep(parsed.step);
           }
-        }
-      }
-
-      const history = localStorage.getItem(HISTORY_KEY);
-      if (history) {
-        const list = JSON.parse(history);
-        if (Array.isArray(list)) {
-          setSavedList(list);
         }
       }
     } catch (e) {
@@ -70,7 +56,6 @@ export default function App() {
 
   const updateFields = (fields: Partial<AnalysisData>) => {
     setData((prev) => ({ ...prev, ...fields }));
-    setIsCurrentSaved(false);
     if (fields.azienda && errorField === 'azienda') {
       setErrorField(null);
     }
@@ -126,23 +111,6 @@ export default function App() {
     }
   };
 
-  const handleStepJump = (targetStep: number) => {
-    // Validate if trying to jump past step 1 without azienda
-    if (targetStep > 1 && !data.azienda.trim()) {
-      setCurrentStep(1);
-      setErrorField('azienda');
-      return;
-    }
-    setErrorField(null);
-    setCurrentStep(targetStep);
-    safeScrollToTop();
-  };
-
-  const canNavigateTo = (targetStep: number) => {
-    if (targetStep === 1) return true;
-    return Boolean(data.azienda.trim());
-  };
-
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
 
   // Reset form without native confirm dialog
@@ -150,7 +118,6 @@ export default function App() {
     setData(INITIAL_DATA);
     setCurrentStep(0);
     setErrorField(null);
-    setIsCurrentSaved(false);
     setIsResetConfirmOpen(false);
     try {
       localStorage.removeItem(DRAFT_KEY);
@@ -162,67 +129,12 @@ export default function App() {
     setIsResetConfirmOpen(true);
   };
 
-  // Save current assessment to archive
-  const handleSaveToArchive = () => {
-    const analysis = analyzeProposal(data);
-    const clientName = data.azienda.trim() || 'Cliente senza nome';
-    const badgeText = `${data.doppia === 'si' ? 'FTTH+FWA' : 'Singola'} · ${
-      analysis.voip ? `${analysis.interni} int` : 'No VoIP'
-    }`;
-
-    const newEntry: SavedAnalysis = {
-      id: data.id || `analysis_${Date.now()}`,
-      data: { ...data },
-      clientName,
-      createdAt: data.createdAt || new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      summaryBadge: badgeText,
-    };
-
-    const updatedList = [newEntry, ...savedList.filter((x) => x.id !== newEntry.id)];
-    setSavedList(updatedList);
-    setIsCurrentSaved(true);
-    try {
-      localStorage.setItem(HISTORY_KEY, JSON.stringify(updatedList));
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  // Load from archive
-  const handleSelectFromArchive = (item: SavedAnalysis) => {
-    setData(item.data);
-    setCurrentStep(5); // Go directly to proposal
-    setIsHistoryOpen(false);
-    setIsCurrentSaved(true);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  // Delete from archive
-  const handleDeleteFromArchive = (id: string) => {
-    const updated = savedList.filter((x) => x.id !== id);
-    setSavedList(updated);
-    try {
-      localStorage.setItem(HISTORY_KEY, JSON.stringify(updated));
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  // Download PDF from history item
-  const handleDownloadFromArchive = (item: SavedAnalysis) => {
-    const analysis = analyzeProposal(item.data);
-    downloadPdf(item.data, analysis);
-  };
-
   const analysisResult = analyzeProposal(data);
 
   return (
     <div className="min-h-screen bg-[#08090b] text-[#f4f5f7] flex flex-col font-sans">
       <Header
-        onOpenHistory={() => setIsHistoryOpen(true)}
         onNewAnalysis={handleReset}
-        savedCount={savedList.length}
       />
 
       {/* Progress line (only for steps 1-4) */}
@@ -244,8 +156,6 @@ export default function App() {
               setCurrentStep(1);
               safeScrollToTop();
             }}
-            data={data}
-            onClear={handleReset}
           />
         )}
 
@@ -287,8 +197,6 @@ export default function App() {
               safeScrollToTop();
             }}
             onNew={handleReset}
-            onSaveToArchive={handleSaveToArchive}
-            isSaved={isCurrentSaved}
           />
         )}
       </main>
@@ -300,16 +208,6 @@ export default function App() {
         onNext={handleNext}
       />
 
-      {/* History & Archive Modal */}
-      <HistoryModal
-        isOpen={isHistoryOpen}
-        onClose={() => setIsHistoryOpen(false)}
-        savedList={savedList}
-        onSelect={handleSelectFromArchive}
-        onDelete={handleDeleteFromArchive}
-        onDownloadPdf={handleDownloadFromArchive}
-      />
-
       {/* In-app Reset Confirmation Modal (safe for iframes) */}
       {isResetConfirmOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
@@ -318,7 +216,7 @@ export default function App() {
               Iniziare una nuova analisi?
             </h3>
             <p className="text-xs text-neutral-300 leading-relaxed">
-              I dati attuali non ancora salvati nell’archivio andranno persi. Vuoi procedere?
+              I dati attuali andranno persi. Vuoi procedere?
             </p>
             <div className="flex items-center justify-end gap-2 pt-2">
               <button

@@ -16,8 +16,8 @@ export const BottomBar: React.FC<BottomBarProps> = ({
   onNext,
   isNextDisabled = false,
 }) => {
-  // Hide on step 5 (proposal has its own prominent action matrix)
-  if (currentStep === 5) return null;
+  // Hide on step 0 (Intro has its own CTA) and step 5 (Proposal has its own prominent action matrix)
+  if (currentStep === 0 || currentStep === 5) return null;
 
   const isFinalStep = currentStep === 4;
 
@@ -56,7 +56,7 @@ export const BottomBar: React.FC<BottomBarProps> = ({
               : 'bg-gradient-to-r from-[#ea5e00] to-[#fe6601] text-white'
           }`}
         >
-          <span>{currentStep === 0 ? "Inizia l'analisi" : (isFinalStep ? 'Genera progetto' : 'Avanti')}</span>
+          <span>{isFinalStep ? 'Genera progetto' : 'Avanti'}</span>
           <ChevronRight className="w-5 h-5" />
         </button>
       </div>

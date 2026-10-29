@@ -87,12 +87,3 @@ export interface TechnicalAnalysisResult {
   disclaimer: string;
   summaryText: string;
 }
-
-export interface SavedAnalysis {
-  id: string;
-  data: AnalysisData;
-  clientName: string;
-  createdAt: string;
-  updatedAt: string;
-  summaryBadge: string;
-}
