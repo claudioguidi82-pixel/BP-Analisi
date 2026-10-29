@@ -68,12 +68,12 @@ export const ProposalStep: React.FC<ProposalStepProps> = ({
         await navigator.share({
           files: [file],
           title: `Analisi Cliente - ${data.azienda}`,
-          text: analysis.summaryText,
+          text: `DESTINATARIO: ${CONTACT.EMAIL}\n\n${analysis.summaryText}`,
         });
       } else {
         // Fallback for desktop: download and show instructions
         downloadPdf(data, analysis);
-        showToast('PDF scaricato. Ora puoi allegarlo alla tua email.');
+        showToast(`PDF scaricato. Invialo a: ${CONTACT.EMAIL}`);
       }
     } catch (e) {
       downloadPdf(data, analysis);
@@ -171,23 +171,23 @@ export const ProposalStep: React.FC<ProposalStepProps> = ({
         </p>
       </section>
 
-      {/* Action Buttons Matrix - MATCHING SCREENSHOT */}
+      {/* Action Buttons Matrix - CORRECTED FOR RECIPIENTS & NUMBER */}
       <div className="space-y-3 pt-4">
-        {/* Email Primary */}
-        <button
-          onClick={handleSharePdf}
-          className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-[#ea5e00] to-[#fe6601] text-white font-heading font-black text-xl shadow-[0_4px_14px_rgba(254,102,1,0.35)] active:scale-[0.98] transition-all"
+        {/* Email Primary - using mailto: to guarantee recipient is set in mail app */}
+        <a
+          href={buildMailtoUrl(data, analysis)}
+          className="w-full py-4.5 px-6 rounded-2xl bg-gradient-to-r from-[#ea5e00] to-[#fe6601] text-white font-heading font-black text-xl shadow-[0_4px_14px_rgba(254,102,1,0.35)] active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer"
         >
-          Invia per email con PDF
-        </button>
+          <span>Invia per email con PDF</span>
+        </a>
 
         <div className="grid grid-cols-2 gap-3">
-          {/* WhatsApp */}
+          {/* WhatsApp with fixed recipient number */}
           <a
             href={buildWhatsAppUrl(analysis)}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-center py-4 px-4 rounded-xl bg-[#15803d] text-white font-heading font-black text-lg active:scale-[0.98] transition-all"
+            className="flex items-center justify-center py-4 px-2 rounded-xl bg-[#15803d] text-white font-heading font-black text-lg active:scale-[0.98] transition-all cursor-pointer"
           >
             <span>WhatsApp</span>
           </a>
@@ -195,23 +195,23 @@ export const ProposalStep: React.FC<ProposalStepProps> = ({
           {/* Chiama ora */}
           <a
             href={`tel:${CONTACT.TEL}`}
-            className="flex items-center justify-center py-4 px-4 rounded-xl bg-[#1a1d23] border border-[#2f343e] text-[#ff8c2e] font-heading font-black text-lg active:scale-[0.98] transition-all"
+            className="flex items-center justify-center py-4 px-2 rounded-xl bg-[#1a1d23] border border-[#2f343e] text-white font-heading font-black text-lg active:scale-[0.98] transition-all"
           >
             <span>Chiama ora</span>
           </a>
 
-          {/* Condividi PDF */}
+          {/* Salva Richiesta PDF - Using system share to allow file sharing/attachment */}
           <button
             onClick={handleSharePdf}
-            className="flex items-center justify-center py-4 px-4 rounded-xl bg-[#1a1d23] border border-[#2f343e] text-white font-heading font-black text-base active:scale-[0.98] transition-all"
+            className="flex items-center justify-center py-4 px-2 rounded-xl bg-[#1a1d23] border border-[#2f343e] text-white font-heading font-black text-base active:scale-[0.98] transition-all"
           >
-            <span>Condividi PDF</span>
+            <span>Salva Richiesta PDF</span>
           </button>
 
           {/* Copia testo */}
           <button
             onClick={handleCopyText}
-            className="flex items-center justify-center py-4 px-4 rounded-xl bg-[#1a1d23] border border-[#2f343e] text-white font-heading font-black text-base active:scale-[0.98] transition-all"
+            className="flex items-center justify-center py-4 px-2 rounded-xl bg-[#1a1d23] border border-[#2f343e] text-white font-heading font-black text-base active:scale-[0.98] transition-all"
           >
             <span>Copia testo</span>
           </button>
@@ -240,9 +240,9 @@ export const ProposalStep: React.FC<ProposalStepProps> = ({
         <button
           type="button"
           onClick={onNew}
-          className="w-full py-4 rounded-xl border border-red-900/50 text-red-400 font-heading font-black text-lg bg-transparent active:scale-[0.98] transition-all"
+          className="w-full py-5 rounded-2xl border-2 border-red-600/30 text-red-500 font-heading font-black text-xl bg-[#1a1010] shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2"
         >
-          Nuova analisi (cancella questi dati)
+          <span>Nuova analisi (cancella questi dati)</span>
         </button>
       </div>
     </div>

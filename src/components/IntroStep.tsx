@@ -1,6 +1,6 @@
 import React from 'react';
 import { ChevronRight } from 'lucide-react';
-import { LOGO_3CX, LOGO_FRITZ, LOGO_WINDTRE_RETAIL } from '../data/assets';
+import { LOGO_3CX, LOGO_FRITZ, LOGO_WINDTRE_BP } from '../data/assets';
 
 interface IntroStepProps {
   onStart: () => void;
@@ -45,7 +45,7 @@ export const IntroStep: React.FC<IntroStepProps> = ({ onStart }) => {
 
         <div className="bg-[#12141a] border border-[#2d3444] rounded-2xl py-5 px-2 flex flex-col items-center text-center">
           <div className="w-14 h-14 bg-black rounded-xl mb-3 flex items-center justify-center border border-[#2d3444] overflow-hidden">
-            <img src={LOGO_WINDTRE_RETAIL} alt="WINDTRE" className="w-10 h-10 object-contain" />
+            <img src={LOGO_WINDTRE_BP} alt="WINDTRE" className="w-10 h-10 object-contain" />
           </div>
           <span className="text-[10px] font-bold text-neutral-300 uppercase tracking-tight leading-tight">
             Canale <br /> commerciale

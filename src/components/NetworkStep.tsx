@@ -170,7 +170,7 @@ export const NetworkStep: React.FC<NetworkStepProps> = ({ data, updateFields }) 
       {/* Continuity Requirements */}
       <div className="space-y-4">
         <label className="block text-sm font-bold text-white mb-2">
-          Quali servizi vuoi che siano sempre garantiti?
+          Quali servizi vuoi che fossero sempre garantiti?
         </label>
         <div className="flex flex-wrap gap-3">
           {continuityOptions.map((opt) => {
