@@ -171,56 +171,54 @@ export const ProposalStep: React.FC<ProposalStepProps> = ({
         </p>
       </section>
 
-      {/* Action Buttons Matrix - CORRECTED FOR RECIPIENTS & NUMBER */}
-      <div className="space-y-3 pt-4">
-        {/* Email Primary - using mailto: to guarantee recipient is set in mail app */}
-        <a
-          href={buildMailtoUrl(data, analysis)}
+      {/* Action Buttons List - REORGANIZED VERTICALLY */}
+      <div className="space-y-4 pt-4">
+        {/* Instruction Label */}
+        <p className="text-center text-[#ff8c2e] font-bold text-sm uppercase tracking-wide">
+          Salva l'allegato da inviare per email o per whatsapp
+        </p>
+
+        {/* 1. Salva Richiesta PDF (Prominent Arancione) */}
+        <button
+          onClick={handleDownloadPdf}
           className="w-full py-4.5 px-6 rounded-2xl bg-gradient-to-r from-[#ea5e00] to-[#fe6601] text-white font-heading font-black text-xl shadow-[0_4px_14px_rgba(254,102,1,0.35)] active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer"
         >
-          <span>Invia per email con PDF</span>
+          <span>Salva Richiesta PDF</span>
+        </button>
+
+        {/* 2. Invia Email (mailto: with recipient) */}
+        <a
+          href={buildMailtoUrl(data, analysis)}
+          className="w-full py-4 rounded-xl bg-[#1a1d23] border border-[#2f343e] text-white font-heading font-black text-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer"
+        >
+          <Mail className="w-5 h-5 text-[#fe6601]" />
+          <span>Invia Email (ricorda di allegare il PDF)</span>
         </a>
 
-        <div className="grid grid-cols-2 gap-3">
-          {/* WhatsApp with fixed recipient number */}
-          <a
-            href={buildWhatsAppUrl(analysis)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center py-4 px-2 rounded-xl bg-[#15803d] text-white font-heading font-black text-lg active:scale-[0.98] transition-all cursor-pointer"
-          >
-            <span>WhatsApp</span>
-          </a>
+        {/* 3. Invia WhatsApp (wa.me with recipient) */}
+        <a
+          href={buildWhatsAppUrl(analysis)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="w-full py-4 rounded-xl bg-[#1a1d23] border border-[#2f343e] text-white font-heading font-black text-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer"
+        >
+          <MessageSquare className="w-5 h-5 text-[#25d366]" />
+          <span>Invia Whatsapp (ricorda di allegare PDF)</span>
+        </a>
 
-          {/* Chiama ora */}
-          <a
-            href={`tel:${CONTACT.TEL}`}
-            className="flex items-center justify-center py-4 px-2 rounded-xl bg-[#1a1d23] border border-[#2f343e] text-white font-heading font-black text-lg active:scale-[0.98] transition-all"
-          >
-            <span>Chiama ora</span>
-          </a>
+        {/* 4. Chiama ora */}
+        <a
+          href={`tel:${CONTACT.TEL}`}
+          className="w-full py-4 rounded-xl bg-[#1a1d23] border border-[#2f343e] text-white font-heading font-black text-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer"
+        >
+          <Phone className="w-5 h-5 text-[#ff8c2e]" />
+          <span>Chiama ora</span>
+        </a>
 
-          {/* Salva Richiesta PDF - Using system share to allow file sharing/attachment */}
-          <button
-            onClick={handleSharePdf}
-            className="flex items-center justify-center py-4 px-2 rounded-xl bg-[#1a1d23] border border-[#2f343e] text-white font-heading font-black text-base active:scale-[0.98] transition-all"
-          >
-            <span>Salva Richiesta PDF</span>
-          </button>
-
-          {/* Copia testo */}
-          <button
-            onClick={handleCopyText}
-            className="flex items-center justify-center py-4 px-2 rounded-xl bg-[#1a1d23] border border-[#2f343e] text-white font-heading font-black text-base active:scale-[0.98] transition-all"
-          >
-            <span>Copia testo</span>
-          </button>
-        </div>
-
-        {/* Modifica Dati */}
+        {/* 5. Modifica Dati */}
         <button
           onClick={onEdit}
-          className="w-full py-4 rounded-xl bg-[#1a1d23] border border-[#2f343e] text-white font-heading font-black text-lg active:scale-[0.98] transition-all"
+          className="w-full py-4 rounded-xl bg-neutral-800/40 border border-neutral-700 text-neutral-400 font-heading font-black text-lg active:scale-[0.98] transition-all cursor-pointer"
         >
           Modifica dati
         </button>
