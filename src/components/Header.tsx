@@ -1,6 +1,7 @@
 import React from 'react';
 import { LOGO_SYSTEM_BYTE, LOGO_WINDTRE_BP } from '../data/assets';
 import { FolderClock, PlusCircle } from 'lucide-react';
+import { PWAInstallButton } from './PWAInstallButton';
 
 interface HeaderProps {
   onOpenHistory: () => void;
@@ -40,6 +41,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenHistory, onNewAnalysis, sa
 
         {/* Action buttons (compact for history/new) */}
         <div className="flex items-center gap-2 pr-4 sm:pr-8">
+          <PWAInstallButton />
           <button
             onClick={onOpenHistory}
             className="p-2 rounded-lg bg-neutral-900/50 text-neutral-300 border border-neutral-800 hover:text-white transition-colors relative"

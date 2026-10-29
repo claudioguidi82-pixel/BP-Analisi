@@ -1,5 +1,5 @@
 {
-  "name": "BP Analisi - System Byte & WINDTRE",
+  "name": "BP Analisi",
   "description": "Piattaforma guidata di analisi esigenze, connettività ridondata, firewall e centralino 3CX per negozi WINDTRE e Business Partner.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
