@@ -4,6 +4,7 @@ import { buildMailtoUrl, buildWhatsAppUrl } from '../utils/engine';
 import { downloadPdf, generatePdfDocument } from '../utils/pdfGenerator';
 import { PartnerBadges } from './PartnerBadges';
 import { CONTACT } from '../data/assets';
+import { Analytics } from '../utils/analytics';
 import {
   Download,
   Mail,
@@ -83,6 +84,7 @@ export const ProposalStep: React.FC<ProposalStepProps> = ({
   const handleDownloadPdf = () => {
     setIsDownloading(true);
     try {
+      Analytics.trackPdfDownload(data.azienda);
       downloadPdf(data, analysis);
       showToast('PDF generato e scaricato correttamente!');
       // Trigger subtle celebration confetti
@@ -189,6 +191,7 @@ export const ProposalStep: React.FC<ProposalStepProps> = ({
         {/* 2. Invia Email (mailto: with recipient) */}
         <a
           href={buildMailtoUrl(data, analysis)}
+          onClick={() => Analytics.trackEmailClick(data.azienda, CONTACT.EMAIL)}
           className="w-full py-4 rounded-xl bg-[#1a1d23] border border-[#2f343e] text-white font-heading font-black text-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer"
         >
           <Mail className="w-5 h-5 text-[#fe6601]" />
@@ -200,6 +203,7 @@ export const ProposalStep: React.FC<ProposalStepProps> = ({
           href={buildWhatsAppUrl(analysis)}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() => Analytics.trackWhatsAppClick(data.azienda)}
           className="w-full py-4 rounded-xl bg-[#1a1d23] border border-[#2f343e] text-white font-heading font-black text-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer"
         >
           <MessageSquare className="w-5 h-5 text-[#25d366]" />
@@ -209,6 +213,7 @@ export const ProposalStep: React.FC<ProposalStepProps> = ({
         {/* 4. Chiama ora */}
         <a
           href={`tel:${CONTACT.TEL}`}
+          onClick={() => Analytics.trackPhoneCallClick()}
           className="w-full py-4 rounded-xl bg-[#1a1d23] border border-[#2f343e] text-white font-heading font-black text-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer"
         >
           <Phone className="w-5 h-5 text-[#ff8c2e]" />
@@ -217,7 +222,10 @@ export const ProposalStep: React.FC<ProposalStepProps> = ({
 
         {/* 5. Modifica Dati */}
         <button
-          onClick={onEdit}
+          onClick={() => {
+            Analytics.trackEditDataClick();
+            onEdit();
+          }}
           className="w-full py-4 rounded-xl bg-neutral-800/40 border border-neutral-700 text-neutral-400 font-heading font-black text-lg active:scale-[0.98] transition-all cursor-pointer"
         >
           Modifica dati

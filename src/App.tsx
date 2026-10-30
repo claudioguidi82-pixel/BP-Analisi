@@ -14,11 +14,35 @@ import { BottomBar } from './components/BottomBar';
 const DRAFT_KEY = 'sb_analisi_active_draft_v2';
 
 import { Hero } from './components/Hero';
+import { Analytics } from './utils/analytics';
+
+const STEP_NAMES = [
+  'Introduzione',
+  'Dati Cliente',
+  'Rete e Connettività',
+  'Accessi Esterni e IP',
+  'Telefonia VoIP e 3CX',
+  'Progetto e Riepilogo',
+];
 
 export default function App() {
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [data, setData] = useState<AnalysisData>(INITIAL_DATA);
   const [errorField, setErrorField] = useState<string | null>(null);
+
+  // Track step views
+  useEffect(() => {
+    Analytics.trackStep(currentStep, STEP_NAMES[currentStep] || `Step ${currentStep}`, data.azienda);
+    if (currentStep === 5 && data.azienda) {
+      Analytics.trackProposalGenerated({
+        customer: data.azienda,
+        hasDualLine: data.doppia === 'si',
+        hasVoip: data.voip === 'si' || (data.voip !== 'no' && (data.interni || 0) > 0),
+        interni: data.interni || 0,
+        pcCount: data.pc || 0,
+      });
+    }
+  }, [currentStep]);
 
   // Load active draft on mount
   useEffect(() => {
@@ -115,6 +139,7 @@ export default function App() {
 
   // Reset form without native confirm dialog
   const executeReset = () => {
+    Analytics.trackNewAnalysisReset();
     setData(INITIAL_DATA);
     setCurrentStep(0);
     setErrorField(null);
