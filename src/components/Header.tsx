@@ -1,13 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { LOGO_SYSTEM_BYTE, LOGO_WINDTRE_BP } from '../data/assets';
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, Activity } from 'lucide-react';
 import { PWAInstallButton } from './PWAInstallButton';
+import { AccessStatsModal } from './AccessStatsModal';
 
 interface HeaderProps {
   onNewAnalysis: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({ onNewAnalysis }) => {
+  const [isStatsOpen, setIsStatsOpen] = useState(false);
+
   return (
     <header className="relative bg-black overflow-hidden select-none z-50">
       {/* Background orange geometric corner */}
@@ -37,18 +40,31 @@ export const Header: React.FC<HeaderProps> = ({ onNewAnalysis }) => {
           />
         </div>
 
-        {/* Action buttons (compact for history/new) */}
+        {/* Action buttons (compact for history/new/stats) */}
         <div className="flex items-center gap-2 pr-4 sm:pr-8">
           <PWAInstallButton />
           <button
+            onClick={() => setIsStatsOpen(true)}
+            className="p-2 rounded-lg bg-neutral-900/50 text-neutral-300 border border-neutral-800 hover:text-white hover:border-[#fe6601]/50 transition-colors"
+            title="Statistiche accessi reali"
+            aria-label="Statistiche accessi reali"
+          >
+            <Activity className="w-4 h-4 text-[#fe6601]" />
+          </button>
+          <button
             onClick={onNewAnalysis}
             className="p-2 rounded-lg bg-neutral-900/50 text-neutral-300 border border-neutral-800 hover:text-white transition-colors"
-            title="Nuova"
+            title="Nuova analisi"
           >
             <PlusCircle className="w-4 h-4" />
           </button>
         </div>
       </div>
+
+      <AccessStatsModal
+        isOpen={isStatsOpen}
+        onClose={() => setIsStatsOpen(false)}
+      />
     </header>
   );
 };

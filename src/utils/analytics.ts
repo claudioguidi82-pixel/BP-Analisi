@@ -55,7 +55,7 @@ if (typeof window !== 'undefined') {
 }
 
 // CounterAPI Configuration
-const COUNTER_NAMESPACE = 'claud_aistudio_live_v1';
+export const COUNTER_NAMESPACE = 'claud_aistudio_live_v1';
 
 /**
  * Determine siteKey based on hostname:
@@ -71,73 +71,147 @@ export function getSiteKey(): string {
 }
 
 /**
- * Send a non-blocking background GET request to CounterAPI with silent error catch
- */
-function sendCounter(key: string) {
-  try {
-    if (typeof window !== 'undefined' && typeof fetch === 'function') {
-      fetch(`https://api.counterapi.dev/v1/${COUNTER_NAMESPACE}/${key}/up`, {
-        method: 'GET',
-        mode: 'cors',
-      }).catch(() => {});
-    }
-  } catch {
-    // silent catch
-  }
-}
-
-/**
- * On app startup (once per sessionStorage "_mon_init"):
+ * Send CounterAPI data on app startup:
  * - total counter
  * - day counter (YYYYMMDD)
+ * - 5-minute active bucket
  */
-function initStartupCounters() {
+/**
+ * Send CounterAPI data on app startup:
+ * - total counter
+ * - day counter (YYYYMMDD)
+ * - 5-minute active bucket
+ */
+export function initCounterMonitoring(): void {
   if (typeof window === 'undefined') return;
   try {
-    if (!sessionStorage.getItem('_mon_init')) {
-      sessionStorage.setItem('_mon_init', '1');
-      const siteKey = getSiteKey();
-      const dayStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-      sendCounter(`${siteKey}_total`);
-      sendCounter(`${siteKey}_day_${dayStr}`);
-    }
+    const siteKey = window.location.hostname.includes('bpanalisiw3') ? 'bpanalisiw3' : 'calibro';
+    
+    // Total visits counter
+    fetch(`https://api.counterapi.dev/v1/${COUNTER_NAMESPACE}/${siteKey}_total/up`, { mode: 'cors' }).catch(() => {});
+    
+    // Day counter
+    const day = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+    fetch(`https://api.counterapi.dev/v1/${COUNTER_NAMESPACE}/${siteKey}_day_${day}/up`, { mode: 'cors' }).catch(() => {});
+    
+    // 5-minute active bucket
+    const bucket = Math.floor(Date.now() / 300000);
+    fetch(`https://api.counterapi.dev/v1/${COUNTER_NAMESPACE}/${siteKey}_active_${bucket}/up`, { mode: 'cors' }).catch(() => {});
+
+    // Maintain local persistent backup counts
+    try {
+      const totalKey = 'bp_counter_total';
+      const prevTotal = parseInt(localStorage.getItem(totalKey) || '0', 10);
+      localStorage.setItem(totalKey, String(prevTotal + 1));
+
+      const dayKey = `bp_counter_day_${day}`;
+      const prevDay = parseInt(localStorage.getItem(dayKey) || '0', 10);
+      localStorage.setItem(dayKey, String(prevDay + 1));
+
+      const activeKey = `bp_counter_active_${bucket}`;
+      localStorage.setItem(activeKey, '1');
+    } catch {}
   } catch {
     // silent catch
   }
 }
 
 /**
- * On startup and every 5 minutes (using bucket = Math.floor(Date.now()/300000) saved in sessionStorage):
- * - active bucket counter
+ * Periodically keep the active 5-minute bucket updated
  */
-function pingActiveBucket() {
+function initActiveBucketInterval(): void {
   if (typeof window === 'undefined') return;
+  setInterval(() => {
+    try {
+      const siteKey = window.location.hostname.includes('bpanalisiw3') ? 'bpanalisiw3' : 'calibro';
+      const bucket = Math.floor(Date.now() / 300000);
+      fetch(`https://api.counterapi.dev/v1/${COUNTER_NAMESPACE}/${siteKey}_active_${bucket}/up`, { mode: 'cors' }).catch(() => {});
+      try {
+        localStorage.setItem(`bp_counter_active_${bucket}`, '1');
+      } catch {}
+    } catch {}
+  }, 300000);
+}
+
+// Auto-run at app opening
+if (typeof window !== 'undefined') {
+  initCounterMonitoring();
+  initActiveBucketInterval();
+}
+
+/**
+ * Live Stats interface for reading real counters
+ */
+export interface LiveAccessStats {
+  siteKey: string;
+  total: number | null;
+  day: number | null;
+  active: number | null;
+  updatedAt: string;
+}
+
+/**
+ * Read counter value directly from CounterAPI without incrementing,
+ * with fallback to persistent local counter if network/endpoint is unavailable.
+ */
+export async function readCounter(keySuffix: string): Promise<number | null> {
+  if (typeof window === 'undefined') return null;
   try {
-    const bucket = Math.floor(Date.now() / 300000);
-    const lastBucket = sessionStorage.getItem('_mon_bucket');
-    if (lastBucket !== String(bucket)) {
-      sessionStorage.setItem('_mon_bucket', String(bucket));
-      const siteKey = getSiteKey();
-      sendCounter(`${siteKey}_active_${bucket}`);
+    const siteKey = window.location.hostname.includes('bpanalisiw3') ? 'bpanalisiw3' : 'calibro';
+    const res = await fetch(`https://api.counterapi.dev/v1/${COUNTER_NAMESPACE}/${siteKey}_${keySuffix}`, {
+      mode: 'cors',
+    });
+    if (res.ok) {
+      const json = await res.json();
+      if (typeof json.count === 'number') {
+        return json.count;
+      }
     }
   } catch {
     // silent catch
   }
+
+  // Fallback to local storage counter
+  try {
+    const val = localStorage.getItem(`bp_counter_${keySuffix}`);
+    if (val !== null) {
+      return parseInt(val, 10);
+    }
+    if (keySuffix.startsWith('active_')) {
+      return 1;
+    }
+  } catch {}
+
+  return null;
 }
 
-function initActiveTracking() {
-  if (typeof window === 'undefined') return;
-  pingActiveBucket();
-  // Check every 60 seconds to catch each new 5-minute bucket promptly
-  setInterval(() => {
-    pingActiveBucket();
-  }, 60000);
+/**
+ * Read complete live access stats (Total, Today, Active now)
+ */
+export async function fetchLiveAccessStats(): Promise<LiveAccessStats> {
+  const siteKey = typeof window !== 'undefined' && window.location.hostname.includes('bpanalisiw3') ? 'bpanalisiw3' : 'calibro';
+  const day = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+  const bucket = Math.floor(Date.now() / 300000);
+
+  const [total, dayCount, active] = await Promise.all([
+    readCounter('total'),
+    readCounter(`day_${day}`),
+    readCounter(`active_${bucket}`),
+  ]);
+
+  return {
+    siteKey,
+    total,
+    day: dayCount,
+    active,
+    updatedAt: new Date().toLocaleTimeString('it-IT'),
+  };
 }
 
-// Auto-run startup counters and active bucket tracking when script loads in browser
+// Expose diagnostic helpers on window object
 if (typeof window !== 'undefined') {
-  initStartupCounters();
-  initActiveTracking();
+  (window as any).fetchLiveAccessStats = fetchLiveAccessStats;
+  (window as any).readCounter = readCounter;
 }
 
 /**
@@ -159,9 +233,11 @@ export function trackEvent(eventName: string, params: Record<string, any> = {}) 
       });
     }
 
-    // 2. CounterAPI background increment (non-blocking, silent catch)
-    const siteKey = getSiteKey();
-    sendCounter(`${siteKey}_evt_${eventName}`);
+    // 2. CounterAPI background tracking (mode: "cors", silent catch)
+    if (typeof window !== 'undefined') {
+      const siteKey = window.location.hostname.includes('bpanalisiw3') ? 'bpanalisiw3' : 'calibro';
+      fetch(`https://api.counterapi.dev/v1/${COUNTER_NAMESPACE}/${siteKey}_evt_${eventName}/up`, { mode: 'cors' }).catch(() => {});
+    }
 
     // 3. Record local diagnostic log
     recordLocalEvent(eventName, params);
